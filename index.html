@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mapa Mundial Interativo - Territórios e Impérios</title>
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #2c3e50 0%, #1a1a2e 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .subtitle {
+            font-size: 1.2em;
+            opacity: 0.9;
+            margin-top: 5px;
+        }
+
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 150px);
+        }
+
+        .controls {
+            padding: 20px;
+            background: #f8f9fa;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .control-group {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+            align-items: center;
+        }
+
+        .control-group label {
+            font-weight: bold;
+            color: #2c3e50;
+            min-width: 120px;
+        }
+
+        select, button {
+            padding: 10px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        select:hover, button:hover {
+            border-color: #667eea;
+            box-shadow: 0 4px 8px rgba(102, 126, 234, 0.2);
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            font-weight: bold;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .map-container {
+            flex: 1;
+            position: relative;
+            min-height: 500px;
+        }
+
+        #map {
+            height: 100%;
+            width: 100%;
+            border-radius: 0 0 15px 15px;
+        }
+
+        .info-panel {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            max-width: 300px;
+            z-index: 1000;
+            border: 2px solid #667eea;
+        }
+
+        .info-panel h3 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 5px;
+        }
+
+        .info-panel p {
+            margin: 5px 0;
+            color: #555;
+        }
+
+        .territory-list {
+            max-height: 300px;
+            overflow-y: auto;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        .territory-item {
+            padding: 8px;
+            margin: 5px 0;
+            background: white;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-left: 4px solid #667eea;
+        }
+
+        .territory-item:hover {
+            background: #e3f2fd;
+            transform: translateX(5px);
+        }
+
+        .territory-item.active {
+            background: #bbdefb;
+            border-left-color: #1976d2;
+            font-weight: bold;
+        }
+
+        .zoom-controls {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+            z-index: 1000;
+        }
+
+        .zoom-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 20px;
+        }
+
+        footer {
+            background: #2c3e50;
+            color: white;
+            text-align: center;
+            padding: 15px;
+            font-size: 0.9em;
+        }
+
+        @media (max-width: 768px) {
+            .control-group {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .control-group label {
+                text-align: center;
+            }
+            
+            h1 {
+                font-size: 1.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🗺️ Mapa Mundial Interativo</h1>
+            <p class="subtitle">Explore a extensão territorial de países e impérios através da história</p>
+        </header>
+
+        <div class="main-content">
+            <div class="controls">
+                <div class="control-group">
+                    <label for="territoryType">Tipo de Território:</label>
+                    <select id="territoryType">
+                        <option value="countries">Países Atuais</option>
+                        <option value="historical">Impérios Históricos</option>
+                        <option value="colonial">Impérios Coloniais</option>
+                        <option value="ancient">Civilizações Antigas</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <label for="timePeriod">Período Histórico:</label>
+                    <select id="timePeriod">
+                        <option value="modern">Era Moderna (1900-2024)</option>
+                        <option value="19th">Século XIX (1800-1900)</option>
+                        <option value="18th">Século XVIII (1700-1800)</option>
+                        <option value="medieval">Idade Média (500-1500)</option>
+                        <option value="ancient">Antiguidade (antes de 500)</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <button id="clearBtn">Limpar Seleção</button>
+                    <button id="compareBtn">Modo Comparação</button>
+                    <button id="fullscreenBtn">Tela Cheia</button>
+                </div>
+            </div>
+
+            <div class="map-container">
+                <div id="map"></div>
+                
+                <div class="info-panel">
+                    <h3>Informações do Território</h3>
+                    <div id="territoryInfo">
+                        <p>Selecione um país ou império no mapa ou na lista abaixo</p>
+                    </div>
+                    
+                    <div class="territory-list" id="territoryList">
+                        <!-- Lista será preenchida dinamicamente -->
+                    </div>
+                </div>
+
+                <div class="zoom-controls">
+                    <button class="zoom-btn" id="zoomIn">+</button>
+                    <button class="zoom-btn" id="zoomOut">-</button>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>Mapa Interativo de Territórios Históricos • Desenvolvido com Leaflet.js</p>
+        </footer>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <script>
+        // Dados dos territórios (simplificado para exemplo)
+        const territoriesData = {
+            countries: {
+                brazil: {
+                    name: "Brasil",
+                    area: "8.515.767 km²",
+                    population: "214 milhões",
+                    capital: "Brasília",
+                    color: "#27ae60",
+                    coordinates: [-14.2350, -51.9253],
+                    info: "Maior país da América do Sul e quinto maior do mundo em área territorial."
+                },
+                usa: {
+                    name: "Estados Unidos",
+                    area: "9.833.517 km²",
+                    population: "331 milhões",
+                    capital: "Washington, D.C.",
+                    color: "#3498db",
+                    coordinates: [37.0902, -95.7129],
+                    info: "Quarto maior país em área territorial e terceira maior população mundial."
+                },
+                russia: {
+                    name: "Rússia",
+                    area: "17.098.242 km²",
+                    population: "144 milhões",
+                    capital: "Moscou",
+                    color: "#e74c3c",
+                    coordinates: [61.5240, 105.3188],
+                    info: "Maior país do mundo em área territorial, abrangendo 11 fusos horários."
+                },
+                china: {
+                    name: "China",
+                    area: "9.596.961 km²",
+                    population: "1.4 bilhão",
+                    capital: "Pequim",
+                    color: "#f39c12",
+                    coordinates: [35.8617, 104.1954],
+                    info: "Quarto maior país em área e mais populoso do mundo."
+                },
+                canada: {
+                    name: "Canadá",
+                    area: "9.984.670 km²",
+                    population: "38 milhões",
+                    capital: "Ottawa",
+                    color: "#9b59b6",
+                    coordinates: [56.1304, -106.3468],
+                    info: "Segundo maior país do mundo em área territorial."
+                }
+            },
+            historical: {
+                romanEmpire: {
+                    name: "Império Romano",
+                    peakYear: "117 d.C.",
+                    area: "5 milhões km²",
+                    color: "#c0392b",
+                    coordinates: [41.9028, 12.4964],
+                    info: "No auge, controlava todo o Mar Mediterrâneo e grande parte da Europa."
+                },
+                britishEmpire: {
+                    name: "Império Britânico",
+                    peakYear: "1920",
+                    area: "35.5 milhões km²",
+                    color: "#2c3e50",
+                    coordinates: [51.5074, -0.1278],
+                    info: "Maior império da história, 'onde o sol nunca se põe'."
+                },
+                mongolEmpire: {
+                    name: "Império Mongol",
+                    peakYear: "1279",
+                    area: "24 milhões km²",
+                    color: "#8e44ad",
+                    coordinates: [46.8625, 103.8467],
+                    info: "Maior império terrestre contíguo da história."
+                },
+                spanishEmpire: {
+                    name: "Império Espanhol",
+                    peakYear: "1580",
+                    area: "19.4 milhões km²",
+                    color: "#d35400",
+                    coordinates: [40.4168, -3.7038],
+                    info: "Primeiro império global, 'o império onde o sol nunca se põe'."
+                }
+            },
+            colonial: {
+                portugueseColonial: {
+                    name: "Império Colonial Português",
+                    peakYear: "1822",
+                    area: "10.4 milhões km²",
+                    color: "#16a085",
+                    coordinates: [39.3999, -8.2245],
+                    info: "Primeiro e mais duradouro império colonial europeu (1415-1999)."
+                },
+                frenchColonial: {
+                    name: "Império Colonial Francês",
+                    peakYear: "1920",
+                    area: "12.3 milhões km²",
+                    color: "#2980b9",
+                    coordinates: [46.6034, 1.8883],
+                    info: "Segundo maior império colonial, após o britânico."
+                }
+            },
+            ancient: {
+                persianEmpire: {
+                    name: "Império Persa",
+                    peakYear: "500 a.C.",
+                    area: "5.5 milhões km²",
+                    color: "#e67e22",
+                    coordinates: [32.4279, 53.6880],
+                    info: "Sob Dario I, foi o maior império até então conhecido."
+                },
+                alexanderEmpire: {
+                    name: "Império de Alexandre",
+                    peakYear: "323 a.C.",
+                    area: "5.2 milhões km²",
+                    color: "#f1c40f",
+                    coordinates: [40.8532, 21.8243],
+                    info: "Criado por Alexandre, o Grande, em apenas 13 anos."
+                }
+            }
+        };
+
+        // Inicialização do mapa
+        let map = L.map('map').setView([20, 0], 2);
+        
+        // Camada base do mapa
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        // Marcadores armazenados
+        let markers = {};
+        let activeMarkers = [];
+
+        // Função para criar marcador
+        function createMarker(territoryKey, territoryData, group) {
+            const marker = L.circleMarker(territoryData.coordinates, {
+                radius: 15,
+                fillColor: territoryData.color,
+                color: '#fff',
+                weight: 2,
+                opacity: 1,
+                fillOpacity: 0.8
+            });
+
+            marker.on('click', function() {
+                showTerritoryInfo(territoryKey, territoryData, group);
+                highlightTerritory(territoryKey);
+            });
+
+            markers[`${group}_${territoryKey}`] = marker;
+            return marker;
+        }
+
+        // Mostrar informações do território
+        function showTerritoryInfo(key, data, group) {
+            const infoDiv = document.getElementById('territoryInfo');
+            let html = `<h4>${data.name}</h4>`;
+            
+            if (data.area) html += `<p><strong>Área:</strong> ${data.area}</p>`;
+            if (data.population) html += `<p><strong>População:</strong> ${data.population}</p>`;
+            if (data.capital) html += `<p><strong>Capital:</strong> ${data.capital}</p>`;
+            if (data.peakYear) html += `<p><strong>Auge:</strong> ${data.peakYear}</p>`;
+            if (data.info) html += `<p><em>${data.info}</em></p>`;
+            
+            infoDiv.innerHTML = html;
+        }
+
+        // Destacar território na lista
+        function highlightTerritory(key) {
+            document.querySelectorAll('.territory-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            const activeItem = document.querySelector(`[data-key="${key}"]`);
+            if (activeItem) activeItem.classList.add('active');
+        }
+
+        // Atualizar marcadores baseado nas seleções
+        function updateMarkers() {
+            // Remover marcadores antigos
+            activeMarkers.forEach(marker => map.removeLayer(marker));
+            activeMarkers = [];
+
+            const territoryType = document.getElementById('territoryType').value;
+            const territories = territoriesData[territoryType];
+
+            // Adicionar novos marcadores
+            for (const [key, data] of Object.entries(territories)) {
+                const marker = createMarker(key, data, territoryType);
+                marker.addTo(map);
+                activeMarkers.push(marker);
+            }
+
+            // Atualizar lista de territórios
+            updateTerritoryList(territoryType);
+        }
+
+        // Atualizar lista de territórios
+        function updateTerritoryList(group) {
+            const listDiv = document.getElementById('territoryList');
+            const territories = territoriesData[group];
+            
+            listDiv.innerHTML = '';
+            
+            for (const [key, data] of Object.entries(territories)) {
+                const item = document.createElement('div');
+                item.className = 'territory-item';
+                item.dataset.key = key;
+                item.innerHTML = `
+                    <strong>${data.name}</strong>
+                    ${data.area ? `<br><small>Área: ${data.area}</small>` : ''}
+                `;
+                
+                item.addEventListener('click', () => {
+                    showTerritoryInfo(key, data, group);
+                    highlightTerritory(key);
+                    map.setView(data.coordinates, 4);
+                });
+                
+                listDiv.appendChild(item);
+            }
+        }
+
+        // Event listeners
+        document.getElementById('territoryType').addEventListener('change', updateMarkers);
+        document.getElementById('timePeriod').addEventListener('change', function() {
+            // Aqui você pode adicionar lógica para filtrar por período
+            alert('Funcionalidade de período histórico será implementada com dados históricos detalhados.');
+        });
+
+        document.getElementById('clearBtn').addEventListener('click', function() {
+            document.getElementById('territoryInfo').innerHTML = '<p>Selecione um país ou império no mapa ou na lista abaixo</p>';
+            document.querySelectorAll('.territory-item').forEach(item => {
+                item.classList.remove('active');
+            });
+        });
+
+        document.getElementById('zoomIn').addEventListener('click', function() {
+            map.setZoom(map.getZoom() + 1);
+        });
+
+        document.getElementById('zoomOut').addEventListener('click', function() {
+            map.setZoom(map.getZoom() - 1);
+        });
+
+        document.getElementById('fullscreenBtn').addEventListener('click', function() {
+            const container = document.querySelector('.container');
+            if (container.requestFullscreen) {
+                container.requestFullscreen();
+            } else if (container.mozRequestFullScreen) {
+                container.mozRequestFullScreen();
+            } else if (container.webkitRequestFullscreen) {
+                container.webkitRequestFullscreen();
+            } else if (container.msRequestFullscreen) {
+                container.msRequestFullscreen();
+            }
+        });
+
+        // Inicializar com dados padrão
+        updateMarkers();
+
+        // Adicionar tooltip informativo
+        const infoPanel = document.querySelector('.info-panel');
+        infoPanel.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-5px)';
+            this.style.boxShadow = '0 8px 20px rgba(0,0,0,0.3)';
+        });
+
+        infoPanel.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '0 4px 15px rgba(0,0,0,0.2)';
+        });
+    </script>
+</body>
+</html>
