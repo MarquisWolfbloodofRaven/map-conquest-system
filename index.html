@@ -309,6 +309,12 @@
         .action-btn.remove {
             background: #e74c3c;
             color: white;
+            border: none;
+        }
+
+        .action-btn.remove:hover {
+            background: #c0392b;
+            transform: scale(1.1);
         }
 
         .mode-toggle {
@@ -435,6 +441,10 @@
             transform: translateX(0);
         }
 
+        .notification.error {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        }
+
         .legend {
             position: absolute;
             bottom: 20px;
@@ -490,36 +500,36 @@
             }
         }
 
-        .empire-display {
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
             display: flex;
+            justify-content: center;
             align-items: center;
-            gap: 10px;
-            padding: 10px;
-            background: white;
-            border-radius: 8px;
-            margin-bottom: 10px;
-            border-left: 4px solid #667eea;
+            z-index: 20000;
+            display: none;
         }
 
-        .empire-color-display {
-            width: 30px;
-            height: 30px;
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #3498db;
             border-radius: 50%;
-            border: 2px solid #333;
+            animation: spin 1s linear infinite;
         }
 
-        .empire-info {
-            flex: 1;
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
-        .empire-name-display {
-            font-weight: bold;
-            color: #2c3e50;
-        }
-
-        .empire-territories-count {
-            font-size: 0.85em;
-            color: #666;
+        .loading-overlay.show {
+            display: flex;
         }
     </style>
 </head>
@@ -539,30 +549,30 @@
                 <div class="control-section">
                     <div class="section-title">👑 MEU IMPÉRIO</div>
                     
-                    <input type="text" id="empireName" class="empire-name-input" placeholder="Nome do seu Império" value="Império Romano">
+                    <input type="text" id="empireName" class="empire-name-input" placeholder="Nome do seu Império" value="Império Romano" maxlength="30">
                     
                     <div class="control-group">
                         <label>Cor do Império:</label>
                         <div class="color-picker">
-                            <div class="color-option selected" style="background: #e74c3c;" data-color="#e74c3c"></div>
-                            <div class="color-option" style="background: #3498db;" data-color="#3498db"></div>
-                            <div class="color-option" style="background: #27ae60;" data-color="#27ae60"></div>
-                            <div class="color-option" style="background: #f39c12;" data-color="#f39c12"></div>
-                            <div class="color-option" style="background: #9b59b6;" data-color="#9b59b6"></div>
-                            <div class="color-option" style="background: #1abc9c;" data-color="#1abc9c"></div>
-                            <div class="color-option" style="background: #e67e22;" data-color="#e67e22"></div>
-                            <div class="color-option" style="background: #34495e;" data-color="#34495e"></div>
+                            <div class="color-option selected" style="background: #e74c3c;" data-color="#e74c3c" title="Vermelho"></div>
+                            <div class="color-option" style="background: #3498db;" data-color="#3498db" title="Azul"></div>
+                            <div class="color-option" style="background: #27ae60;" data-color="#27ae60" title="Verde"></div>
+                            <div class="color-option" style="background: #f39c12;" data-color="#f39c12" title="Laranja"></div>
+                            <div class="color-option" style="background: #9b59b6;" data-color="#9b59b6" title="Roxo"></div>
+                            <div class="color-option" style="background: #1abc9c;" data-color="#1abc9c" title="Turquesa"></div>
+                            <div class="color-option" style="background: #e67e22;" data-color="#e67e22" title="Tangerina"></div>
+                            <div class="color-option" style="background: #34495e;" data-color="#34495e" title="Azul Petróleo"></div>
                         </div>
                     </div>
 
                     <div class="mode-toggle">
-                        <button class="mode-btn conquer active" data-mode="conquer">
+                        <button class="mode-btn conquer active" data-mode="conquer" title="Clique nos países para conquistá-los">
                             ⚔️ CONQUISTAR
                         </button>
-                        <button class="mode-btn build" data-mode="build">
+                        <button class="mode-btn build" data-mode="build" title="Desenhe seus próprios territórios">
                             🏗️ CONSTRUIR
                         </button>
-                        <button class="mode-btn edit" data-mode="edit">
+                        <button class="mode-btn edit" data-mode="edit" title="Edite territórios existentes">
                             ✏️ EDITAR
                         </button>
                     </div>
@@ -571,23 +581,27 @@
                 <div class="control-section">
                     <div class="section-title">🎯 AÇÕES</div>
                     
-                    <button class="btn-conquer" id="conquerModeBtn">
+                    <button class="btn-conquer" id="conquerModeBtn" title="Ativar modo conquista">
                         🗺️ Modo Conquista (Clique nos Países)
                     </button>
                     
-                    <button class="btn-build" id="drawPolygonBtn">
+                    <button class="btn-build" id="drawPolygonBtn" title="Desenhar território personalizado">
                         📐 Desenhar Território Personalizado
                     </button>
                     
-                    <button class="btn-delete" id="deleteBtn">
+                    <button class="btn-delete" id="deleteBtn" title="Remover território selecionado">
                         🗑️ Deletar Território Selecionado
                     </button>
                     
-                    <button class="btn-save" id="saveEmpireBtn">
+                    <button class="btn-save" id="saveEmpireBtn" title="Salvar império no navegador">
                         💾 Salvar Império
                     </button>
                     
-                    <button class="btn-delete" id="clearAllBtn">
+                    <button class="btn-save" id="loadEmpireBtn" title="Carregar império salvo">
+                        📂 Carregar Império
+                    </button>
+                    
+                    <button class="btn-delete" id="clearAllBtn" title="Remover todos os territórios">
                         🔄 Limpar Tudo
                     </button>
                 </div>
@@ -605,12 +619,16 @@
                             <span class="stat-value" id="totalArea">0 km²</span>
                         </div>
                         <div class="stat-item">
-                            <span class="stat-label">Perímetro:</span>
+                            <span class="stat-label">Perímetro Estimado:</span>
                             <span class="stat-value" id="totalPerimeter">0 km</span>
                         </div>
                         <div class="stat-item">
                             <span class="stat-label">Ranking Mundial:</span>
                             <span class="stat-value" id="worldRank">-</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Poder Militar:</span>
+                            <span class="stat-value" id="militaryPower">⚔️ 0</span>
                         </div>
                     </div>
                 </div>
@@ -643,13 +661,17 @@
                     </div>
                     
                     <div class="zoom-controls">
-                        <button class="zoom-btn" id="zoomIn">+</button>
-                        <button class="zoom-btn" id="zoomOut">-</button>
-                        <button class="zoom-btn" id="zoomReset">⌂</button>
+                        <button class="zoom-btn" id="zoomIn" title="Aumentar zoom">+</button>
+                        <button class="zoom-btn" id="zoomOut" title="Diminuir zoom">-</button>
+                        <button class="zoom-btn" id="zoomReset" title="Resetar zoom">⌂</button>
                     </div>
                     
-                    <button class="btn-save" id="fullscreenBtn" style="margin-top: 10px; width: 100%;">
+                    <button class="btn-save" id="fullscreenBtn" style="margin-top: 10px; width: 100%;" title="Tela cheia">
                         🖥️ Tela Cheia
+                    </button>
+                    
+                    <button class="btn-build" id="locateMeBtn" style="margin-top: 10px; width: 100%;" title="Encontrar minha localização">
+                        📍 Minha Localização
                     </button>
                 </div>
 
@@ -660,7 +682,11 @@
                     </div>
                     <div class="legend-item">
                         <div class="legend-color" style="background: #3498db; opacity: 0.5;"></div>
-                        <span>Área Selecionada</span>
+                        <span>Área Disponível</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #f39c12;"></div>
+                        <span>Território Personalizado</span>
                     </div>
                 </div>
             </div>
@@ -671,17 +697,20 @@
         </footer>
     </div>
 
-    <div class="notification" id="notification">
-        Território conquistado com sucesso!
+    <div class="notification" id="notification"></div>
+    <div class="loading-overlay" id="loading">
+        <div class="loading-spinner"></div>
     </div>
 
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <!-- Leaflet Draw JS -->
     <script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
+    <!-- Leaflet Geometry Util para cálculos precisos -->
+    <script src="https://unpkg.com/leaflet-geometryutil@0.9.1/src/leaflet.geometryutil.js"></script>
     
     <script>
-        // Estado do jogo
+        // Estado do jogo melhorado
         const gameState = {
             currentMode: 'conquer',
             empireColor: '#e74c3c',
@@ -689,44 +718,62 @@
             conqueredTerritories: [],
             drawnTerritories: [],
             selectedTerritory: null,
-            countryData: {} // Será preenchido com dados reais
+            totalArea: 0,
+            territoriesCount: 0,
+            militaryPower: 0,
+            drawControl: null
         };
 
-        // Dados simplificados de países (em um app real, usaria dados GeoJSON completos)
-        const mockCountries = {
-            brazil: { name: "Brasil", area: 8515767, coordinates: [-14.2350, -51.9253], path: null },
-            usa: { name: "Estados Unidos", area: 9833517, coordinates: [37.0902, -95.7129], path: null },
-            russia: { name: "Rússia", area: 17098242, coordinates: [61.5240, 105.3188], path: null },
-            china: { name: "China", area: 9596961, coordinates: [35.8617, 104.1954], path: null },
-            canada: { name: "Canadá", area: 9984670, coordinates: [56.1304, -106.3468], path: null },
-            australia: { name: "Austrália", area: 7692024, coordinates: [-25.2744, 133.7751], path: null },
-            india: { name: "Índia", area: 3287263, coordinates: [20.5937, 78.9629], path: null },
-            argentina: { name: "Argentina", area: 2780400, coordinates: [-38.4161, -63.6167], path: null },
-            egypt: { name: "Egito", area: 1001450, coordinates: [26.8206, 30.8025], path: null },
-            southAfrica: { name: "África do Sul", area: 1221037, coordinates: [-30.5595, 22.9375], path: null },
-            germany: { name: "Alemanha", area: 357022, coordinates: [51.1657, 10.4515], path: null },
-            france: { name: "França", area: 551695, coordinates: [46.6034, 1.8883], path: null },
-            uk: { name: "Reino Unido", area: 242900, coordinates: [55.3781, -3.4360], path: null },
-            japan: { name: "Japão", area: 377973, coordinates: [36.2048, 138.2529], path: null },
-            mexico: { name: "México", area: 1964375, coordinates: [23.6345, -102.5528], path: null }
+        // Dados melhorados dos países
+        const countriesData = {
+            brazil: { name: "Brasil", area: 8515767, coordinates: [-14.2350, -51.9253], continent: "América do Sul", population: 213000000 },
+            usa: { name: "Estados Unidos", area: 9833517, coordinates: [37.0902, -95.7129], continent: "América do Norte", population: 331000000 },
+            russia: { name: "Rússia", area: 17098242, coordinates: [61.5240, 105.3188], continent: "Europa/Ásia", population: 146000000 },
+            china: { name: "China", area: 9596961, coordinates: [35.8617, 104.1954], continent: "Ásia", population: 1402000000 },
+            canada: { name: "Canadá", area: 9984670, coordinates: [56.1304, -106.3468], continent: "América do Norte", population: 38000000 },
+            australia: { name: "Austrália", area: 7692024, coordinates: [-25.2744, 133.7751], continent: "Oceania", population: 25700000 },
+            india: { name: "Índia", area: 3287263, coordinates: [20.5937, 78.9629], continent: "Ásia", population: 1380004385 },
+            argentina: { name: "Argentina", area: 2780400, coordinates: [-38.4161, -63.6167], continent: "América do Sul", population: 45376763 },
+            egypt: { name: "Egito", area: 1001450, coordinates: [26.8206, 30.8025], continent: "África", population: 104258327 },
+            southAfrica: { name: "África do Sul", area: 1221037, coordinates: [-30.5595, 22.9375], continent: "África", population: 59308690 },
+            germany: { name: "Alemanha", area: 357022, coordinates: [51.1657, 10.4515], continent: "Europa", population: 83166711 },
+            france: { name: "França", area: 551695, coordinates: [46.6034, 1.8883], continent: "Europa", population: 67391582 },
+            uk: { name: "Reino Unido", area: 242900, coordinates: [55.3781, -3.4360], continent: "Europa", population: 67886011 },
+            japan: { name: "Japão", area: 377973, coordinates: [36.2048, 138.2529], continent: "Ásia", population: 125800000 },
+            mexico: { name: "México", area: 1964375, coordinates: [23.6345, -102.5528], continent: "América do Norte", population: 128932753 },
+            indonesia: { name: "Indonésia", area: 1904569, coordinates: [-0.7893, 113.9213], continent: "Ásia", population: 273523615 },
+            pakistan: { name: "Paquistão", area: 881913, coordinates: [30.3753, 69.3451], continent: "Ásia", population: 220892340 },
+            nigeria: { name: "Nigéria", area: 923768, coordinates: [9.0820, 8.6753], continent: "África", population: 206139589 },
+            bangladesh: { name: "Bangladesh", area: 147570, coordinates: [23.6850, 90.3563], continent: "Ásia", population: 164689383 },
+            russia: { name: "Rússia", area: 17098242, coordinates: [61.5240, 105.3188], continent: "Europa/Ásia", population: 145934462 }
         };
 
         // Inicialização do mapa
-        let map = L.map('map').setView([20, 0], 2);
+        const map = L.map('map', {
+            center: [20, 0],
+            zoom: 2,
+            zoomControl: false,
+            fadeAnimation: true,
+            zoomAnimation: true
+        });
         
         // Camadas de mapa
         const baseMaps = {
             openstreetmap: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; OpenStreetMap contributors'
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                maxZoom: 19
             }),
             satellite: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-                attribution: '&copy; Esri'
+                attribution: '&copy; <a href="https://www.esri.com/">Esri</a>',
+                maxZoom: 18
             }),
             terrain: L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; OpenTopoMap contributors'
+                attribution: '&copy; <a href="https://opentopomap.org">OpenTopoMap</a> contributors',
+                maxZoom: 17
             }),
             dark: L.tileLayer('https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png', {
-                attribution: '&copy; Stadia Maps'
+                attribution: '&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>',
+                maxZoom: 20
             })
         };
 
@@ -734,113 +781,102 @@
         baseMaps.openstreetmap.addTo(map);
 
         // Camada de desenho
-        let drawnItems = new L.FeatureGroup();
+        const drawnItems = new L.FeatureGroup();
         map.addLayer(drawnItems);
 
+        // Configuração do Leaflet Draw
         const drawControl = new L.Control.Draw({
             edit: {
                 featureGroup: drawnItems,
-                remove: true
+                remove: true,
+                edit: {
+                    selectedPathOptions: {
+                        maintainColor: true,
+                        opacity: 0.8
+                    }
+                }
             },
             draw: {
                 polygon: {
+                    allowIntersection: false,
                     showArea: true,
                     drawError: {
                         color: '#e74c3c',
-                        timeout: 1000
+                        timeout: 1000,
+                        message: 'Polígonos não podem se cruzar!'
                     },
                     shapeOptions: {
                         color: gameState.empireColor,
-                        fillOpacity: 0.3
-                    }
+                        weight: 3,
+                        opacity: 0.8,
+                        fillOpacity: 0.3,
+                        smoothFactor: 1
+                    },
+                    metric: true,
+                    feet: false
                 },
                 polyline: false,
                 circle: false,
                 rectangle: {
                     shapeOptions: {
                         color: gameState.empireColor,
+                        weight: 3,
+                        opacity: 0.8,
                         fillOpacity: 0.3
-                    }
+                    },
+                    metric: true
                 },
                 marker: false,
                 circlemarker: false
             }
         });
+        
         map.addControl(drawControl);
+        gameState.drawControl = drawControl;
 
-        // Evento de desenho completo
-        map.on(L.Draw.Event.CREATED, function (event) {
-            const layer = event.layer;
-            const shape = event.layerType;
+        // Variáveis globais
+        const countryMarkers = {};
+        let currentNotificationTimeout = null;
+
+        // Função para mostrar loading
+        function showLoading(show) {
+            document.getElementById('loading').classList.toggle('show', show);
+        }
+
+        // Função melhorada de notificação
+        function showNotification(message, isError = false) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.classList.remove('error');
+            if (isError) {
+                notification.classList.add('error');
+            }
+            notification.classList.add('show');
             
-            // Aplicar cor do império
-            if (shape === 'polygon' || shape === 'rectangle') {
-                layer.setStyle({
-                    color: gameState.empireColor,
-                    fillOpacity: 0.3
-                });
+            if (currentNotificationTimeout) {
+                clearTimeout(currentNotificationTimeout);
             }
             
-            drawnItems.addLayer(layer);
-            
-            // Salvar território desenhado
-            const territory = {
-                id: 'custom_' + Date.now(),
-                name: `Território ${gameState.drawnTerritories.length + 1}`,
-                type: shape,
-                layer: layer,
-                area: shape === 'polygon' ? calculatePolygonArea(layer) : 0,
-                color: gameState.empireColor
-            };
-            
-            gameState.drawnTerritories.push(territory);
-            addTerritoryToList(territory);
-            updateStats();
-            showNotification(`Território personalizado criado! Área: ${formatArea(territory.area)}`);
-        });
+            currentNotificationTimeout = setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
 
-        // Evento de remoção
-        map.on(L.Draw.Event.DELETED, function (event) {
-            const layers = event.layers.getLayers();
-            layers.forEach(layer => {
-                const index = gameState.drawnTerritories.findIndex(t => t.layer === layer);
-                if (index !== -1) {
-                    gameState.drawnTerritories.splice(index, 1);
-                }
-            });
-            updateStats();
-            updateConqueredList();
-        });
-
-        // Evento de edição
-        map.on(L.Draw.Event.EDITED, function (event) {
-            const layers = event.layers.getLayers();
-            layers.forEach(layer => {
-                const territory = gameState.drawnTerritories.find(t => t.layer === layer);
-                if (territory && territory.type === 'polygon') {
-                    territory.area = calculatePolygonArea(layer);
-                }
-            });
-            updateStats();
-        });
-
-        // Criar marcadores para países
-        const countryMarkers = {};
-        let countryPolygons = {};
-
-        // Função para criar país clicável (simplificado - em produção usaria GeoJSON real)
+        // Função melhorada para criar marcador de país
         function createCountryMarker(countryKey, countryData) {
             const marker = L.circleMarker(countryData.coordinates, {
-                radius: 20,
+                radius: 15,
                 fillColor: '#3498db',
                 color: '#fff',
                 weight: 2,
                 opacity: 1,
                 fillOpacity: 0.6,
-                className: 'country-marker'
+                className: 'country-marker',
+                countryKey: countryKey
             });
 
-            marker.on('click', function() {
+            marker.on('click', function(e) {
+                e.originalEvent.stopPropagation();
                 if (gameState.currentMode === 'conquer') {
                     conquerCountry(countryKey, countryData);
                 } else if (gameState.currentMode === 'edit') {
@@ -848,21 +884,45 @@
                 }
             });
 
-            marker.bindTooltip(countryData.name, {
-                permanent: false,
-                direction: 'top'
+            marker.on('mouseover', function() {
+                if (!gameState.conqueredTerritories.some(t => t.id === countryKey)) {
+                    this.setStyle({
+                        radius: 20,
+                        fillOpacity: 0.8
+                    });
+                }
+                this.bindTooltip(countryData.name, {
+                    permanent: false,
+                    direction: 'top',
+                    className: 'country-tooltip'
+                }).openTooltip();
+            });
+
+            marker.on('mouseout', function() {
+                if (!gameState.conqueredTerritories.some(t => t.id === countryKey)) {
+                    this.setStyle({
+                        radius: 15,
+                        fillOpacity: 0.6
+                    });
+                }
+                this.closeTooltip();
             });
 
             countryMarkers[countryKey] = marker;
             return marker;
         }
 
-        // Conquistar país
+        // Função melhorada para conquistar país
         function conquerCountry(countryKey, countryData) {
             const marker = countryMarkers[countryKey];
             
+            if (!marker) {
+                showNotification('Erro: País não encontrado!', true);
+                return;
+            }
+
             if (gameState.conqueredTerritories.some(t => t.id === countryKey)) {
-                showNotification(`${countryData.name} já está sob seu controle!`);
+                showNotification(`${countryData.name} já está sob seu controle!`, true);
                 return;
             }
 
@@ -870,7 +930,9 @@
             marker.setStyle({
                 fillColor: gameState.empireColor,
                 fillOpacity: 0.8,
-                radius: 25
+                radius: 20,
+                color: '#fff',
+                weight: 3
             });
 
             // Criar território conquistado
@@ -880,32 +942,53 @@
                 type: 'country',
                 area: countryData.area,
                 marker: marker,
-                color: gameState.empireColor
+                color: gameState.empireColor,
+                conqueredAt: new Date().toISOString(),
+                population: countryData.population || 0,
+                continent: countryData.continent || 'Desconhecido'
             };
 
             gameState.conqueredTerritories.push(territory);
-            addTerritoryToList(territory);
             updateStats();
-            showNotification(`⚔️ ${countryData.name} conquistado! +${countryData.area.toLocaleString('pt-BR')} km²`);
+            updateConqueredList();
+            
+            showNotification(`⚔️ ${countryData.name} conquistado! +${formatArea(countryData.area)}`);
+            
+            // Animação de conquista
+            marker.setStyle({ radius: 25 });
+            setTimeout(() => {
+                marker.setStyle({ radius: 20 });
+            }, 300);
         }
 
-        // Adicionar território à lista
+        // Função melhorada para adicionar território à lista
         function addTerritoryToList(territory) {
             const list = document.getElementById('conqueredList');
-            if (list.querySelector('div[style]')) {
-                list.innerHTML = '';
+            
+            // Remover mensagem "vazia" se existir
+            const emptyMessage = list.querySelector('div[style*="padding: 20px"]');
+            if (emptyMessage) {
+                emptyMessage.remove();
             }
 
             const item = document.createElement('div');
             item.className = 'territory-item conquered';
             item.dataset.id = territory.id;
+            
+            const areaFormatted = formatArea(territory.area);
+            const populationFormatted = territory.population ? formatPopulation(territory.population) : '';
+            
             item.innerHTML = `
                 <div class="territory-name">
                     <strong>${territory.name}</strong>
-                    <div class="territory-area">${formatArea(territory.area)}</div>
+                    <div class="territory-area">
+                        ${areaFormatted}
+                        ${populationFormatted ? ` • 👥 ${populationFormatted}` : ''}
+                    </div>
+                    ${territory.continent ? `<small>${territory.continent}</small>` : ''}
                 </div>
                 <div class="territory-actions">
-                    <button class="action-btn remove" data-id="${territory.id}">×</button>
+                    <button class="action-btn remove" data-id="${territory.id}" title="Remover território">×</button>
                 </div>
             `;
 
@@ -915,7 +998,8 @@
                 }
             });
 
-            item.querySelector('.remove').addEventListener('click', function(e) {
+            const removeBtn = item.querySelector('.remove');
+            removeBtn.addEventListener('click', function(e) {
                 e.stopPropagation();
                 removeTerritory(territory.id);
             });
@@ -923,7 +1007,7 @@
             list.appendChild(item);
         }
 
-        // Remover território
+        // Função melhorada para remover território
         function removeTerritory(id) {
             // Remover território conquistado
             const conqueredIndex = gameState.conqueredTerritories.findIndex(t => t.id === id);
@@ -932,9 +1016,12 @@
                 territory.marker.setStyle({
                     fillColor: '#3498db',
                     fillOpacity: 0.6,
-                    radius: 20
+                    radius: 15,
+                    color: '#fff',
+                    weight: 2
                 });
                 gameState.conqueredTerritories.splice(conqueredIndex, 1);
+                showNotification(`🗑️ ${territory.name} removido do império`);
             }
 
             // Remover território desenhado
@@ -943,14 +1030,18 @@
                 const territory = gameState.drawnTerritories[drawnIndex];
                 drawnItems.removeLayer(territory.layer);
                 gameState.drawnTerritories.splice(drawnIndex, 1);
+                showNotification(`🗑️ Território personalizado removido`);
+            }
+
+            if (gameState.selectedTerritory === id) {
+                gameState.selectedTerritory = null;
             }
 
             updateStats();
             updateConqueredList();
-            showNotification('Território removido!');
         }
 
-        // Atualizar lista de conquistados
+        // Função melhorada para atualizar lista de conquistados
         function updateConqueredList() {
             const list = document.getElementById('conqueredList');
             list.innerHTML = '';
@@ -971,38 +1062,82 @@
             });
         }
 
-        // Selecionar território
+        // Função para selecionar território
         function selectTerritory(id) {
             gameState.selectedTerritory = id;
             document.querySelectorAll('.territory-item').forEach(item => {
                 item.classList.remove('active');
             });
-            const selectedItem = document.querySelector(`.territory-item[data-id="${id}"]`);
-            if (selectedItem) selectedItem.classList.add('active');
-            showNotification(`Território ${id} selecionado para edição`);
-        }
-
-        // Calcular área de polígono
-        function calculatePolygonArea(layer) {
-            const latLngs = layer.getLatLngs()[0];
-            if (!latLngs || latLngs.length < 3) return 0;
             
-            // Fórmula simplificada para cálculo de área
-            let area = 0;
-            for (let i = 0; i < latLngs.length; i++) {
-                const current = latLngs[i];
-                const next = latLngs[(i + 1) % latLngs.length];
-                area += current.lng * next.lat - next.lng * current.lat;
+            const selectedItem = document.querySelector(`.territory-item[data-id="${id}"]`);
+            if (selectedItem) {
+                selectedItem.classList.add('active');
+                
+                // Encontrar e centralizar no território
+                const territory = gameState.conqueredTerritories.find(t => t.id === id) || 
+                                 gameState.drawnTerritories.find(t => t.id === id);
+                
+                if (territory) {
+                    if (territory.type === 'country' && territory.marker) {
+                        map.panTo(territory.marker.getLatLng());
+                    } else if (territory.layer) {
+                        const bounds = territory.layer.getBounds();
+                        if (bounds.isValid()) {
+                            map.fitBounds(bounds, { padding: [50, 50] });
+                        }
+                    }
+                }
             }
             
-            // Converter para km² aproximado
-            return Math.abs(area * 6371 * 6371 * Math.PI / 180 * 0.5);
+            showNotification(`📌 Território selecionado para edição`);
         }
 
-        // Formatar área
+        // Função melhorada para calcular área de polígono
+        function calculatePolygonArea(layer) {
+            if (!layer || !layer.getLatLngs) return 0;
+            
+            try {
+                const latLngs = layer.getLatLngs();
+                if (!latLngs || !latLngs[0] || latLngs[0].length < 3) return 0;
+                
+                // Usar L.GeometryUtil para cálculo mais preciso
+                if (window.L && L.GeometryUtil) {
+                    const area = L.GeometryUtil.geodesicArea(latLngs[0]);
+                    return Math.round(area / 1000000); // Converter para km²
+                }
+                
+                // Fallback para cálculo simples
+                let area = 0;
+                const points = latLngs[0];
+                const R = 6371; // Raio da Terra em km
+                
+                for (let i = 0; i < points.length; i++) {
+                    const j = (i + 1) % points.length;
+                    const p1 = points[i];
+                    const p2 = points[j];
+                    
+                    const lambda1 = p1.lng * Math.PI / 180;
+                    const lambda2 = p2.lng * Math.PI / 180;
+                    const phi1 = p1.lat * Math.PI / 180;
+                    const phi2 = p2.lat * Math.PI / 180;
+                    
+                    area += (lambda2 - lambda1) * (2 + Math.sin(phi1) + Math.sin(phi2));
+                }
+                
+                area = Math.abs(area * R * R / 2);
+                return Math.round(area);
+            } catch (e) {
+                console.error('Erro ao calcular área:', e);
+                return 0;
+            }
+        }
+
+        // Função melhorada para formatação de área
         function formatArea(area) {
+            if (!area || isNaN(area)) return '0 km²';
+            
             if (area >= 1000000) {
-                return `${(area / 1000000).toFixed(1)} milhões km²`;
+                return `${(area / 1000000).toFixed(2)} milhões km²`;
             } else if (area >= 1000) {
                 return `${(area / 1000).toFixed(1)} mil km²`;
             } else {
@@ -1010,74 +1145,210 @@
             }
         }
 
-        // Atualizar estatísticas
+        // Função para formatar população
+        function formatPopulation(pop) {
+            if (!pop) return '';
+            if (pop >= 1000000000) {
+                return `${(pop / 1000000000).toFixed(1)}B`;
+            } else if (pop >= 1000000) {
+                return `${(pop / 1000000).toFixed(1)}M`;
+            } else if (pop >= 1000) {
+                return `${(pop / 1000).toFixed(1)}K`;
+            }
+            return pop.toString();
+        }
+
+        // Função melhorada para atualizar estatísticas
         function updateStats() {
-            const totalArea = gameState.conqueredTerritories.reduce((sum, t) => sum + t.area, 0) +
-                            gameState.drawnTerritories.reduce((sum, t) => sum + t.area, 0);
+            const totalArea = gameState.conqueredTerritories.reduce((sum, t) => sum + (t.area || 0), 0) +
+                            gameState.drawnTerritories.reduce((sum, t) => sum + (t.area || 0), 0);
             
             const territoriesCount = gameState.conqueredTerritories.length + gameState.drawnTerritories.length;
+            const totalPopulation = gameState.conqueredTerritories.reduce((sum, t) => sum + (t.population || 0), 0);
+            
+            // Calcular poder militar baseado em área e população
+            const militaryPower = Math.round((totalArea / 1000000) * 100 + (totalPopulation / 1000000) * 10);
+            
+            gameState.totalArea = totalArea;
+            gameState.territoriesCount = territoriesCount;
+            gameState.militaryPower = militaryPower;
             
             document.getElementById('territoriesCount').textContent = territoriesCount;
             document.getElementById('totalArea').textContent = formatArea(totalArea);
-            document.getElementById('totalPerimeter').textContent = `${Math.round(totalArea * 0.1)} km`;
             
-            // Ranking simplificado
+            // Perímetro estimado (cálculo simplificado baseado na área)
+            const estimatedPerimeter = Math.round(Math.sqrt(totalArea) * 4);
+            document.getElementById('totalPerimeter').textContent = estimatedPerimeter ? `${estimatedPerimeter.toLocaleString('pt-BR')} km` : '0 km';
+            
+            document.getElementById('militaryPower').textContent = `⚔️ ${militaryPower.toLocaleString('pt-BR')}`;
+            
+            // Ranking melhorado
             const worldArea = 148940000; // km²
             const percentage = (totalArea / worldArea) * 100;
-            let rank;
-            if (percentage >= 10) rank = 'Superpotência Mundial 🌍';
-            else if (percentage >= 5) rank = 'Grande Potência 🦅';
-            else if (percentage >= 2) rank = 'Potência Regional 🏛️';
-            else if (percentage >= 1) rank = 'Nação Emergente ⚡';
-            else rank = 'Estado em Formação 🌱';
             
-            document.getElementById('worldRank').textContent = rank;
+            let rank, rankColor;
+            if (percentage >= 15) {
+                rank = '👑 Império Global';
+                rankColor = '#ffd700';
+            } else if (percentage >= 10) {
+                rank = '🌍 Superpotência';
+                rankColor = '#c0c0c0';
+            } else if (percentage >= 5) {
+                rank = '🦅 Grande Potência';
+                rankColor = '#cd7f32';
+            } else if (percentage >= 2) {
+                rank = '🏛️ Potência Regional';
+                rankColor = '#3498db';
+            } else if (percentage >= 1) {
+                rank = '⚡ Nação Emergente';
+                rankColor = '#27ae60';
+            } else if (percentage >= 0.1) {
+                rank = '🌱 Estado em Formação';
+                rankColor = '#f39c12';
+            } else {
+                rank = '🔰 Território Inicial';
+                rankColor = '#95a5a6';
+            }
+            
+            const rankElement = document.getElementById('worldRank');
+            rankElement.textContent = rank;
+            rankElement.style.color = rankColor;
         }
 
-        // Mostrar notificação
-        function showNotification(message) {
-            const notification = document.getElementById('notification');
-            notification.textContent = message;
-            notification.classList.add('show');
+        // Evento de desenho completo melhorado
+        map.on(L.Draw.Event.CREATED, function (event) {
+            const layer = event.layer;
+            const shape = event.layerType;
             
-            setTimeout(() => {
-                notification.classList.remove('show');
-            }, 3000);
-        }
+            try {
+                // Aplicar cor do império
+                if (shape === 'polygon' || shape === 'rectangle') {
+                    layer.setStyle({
+                        color: gameState.empireColor,
+                        weight: 3,
+                        opacity: 0.8,
+                        fillOpacity: 0.3
+                    });
+                }
+                
+                drawnItems.addLayer(layer);
+                
+                // Calcular área
+                const area = shape === 'polygon' || shape === 'rectangle' ? calculatePolygonArea(layer) : 0;
+                
+                // Salvar território desenhado
+                const territoryId = 'custom_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                const territory = {
+                    id: territoryId,
+                    name: `Território ${gameState.drawnTerritories.length + 1}`,
+                    type: shape,
+                    layer: layer,
+                    area: area,
+                    color: gameState.empireColor,
+                    createdAt: new Date().toISOString()
+                };
+                
+                gameState.drawnTerritories.push(territory);
+                updateStats();
+                updateConqueredList();
+                
+                showNotification(`✅ Território personalizado criado! Área: ${formatArea(area)}`);
+                
+                // Selecionar automaticamente o novo território
+                selectTerritory(territoryId);
+                
+            } catch (e) {
+                console.error('Erro ao criar território:', e);
+                showNotification('Erro ao criar território!', true);
+            }
+        });
 
-        // Event Listeners
+        // Evento de remoção
+        map.on(L.Draw.Event.DELETED, function (event) {
+            const layers = event.layers.getLayers();
+            layers.forEach(layer => {
+                const index = gameState.drawnTerritories.findIndex(t => t.layer === layer);
+                if (index !== -1) {
+                    const territory = gameState.drawnTerritories[index];
+                    gameState.drawnTerritories.splice(index, 1);
+                    
+                    if (gameState.selectedTerritory === territory.id) {
+                        gameState.selectedTerritory = null;
+                    }
+                }
+            });
+            updateStats();
+            updateConqueredList();
+            showNotification('🗑️ Território(s) removido(s)');
+        });
+
+        // Evento de edição
+        map.on(L.Draw.Event.EDITED, function (event) {
+            const layers = event.layers.getLayers();
+            layers.forEach(layer => {
+                const territory = gameState.drawnTerritories.find(t => t.layer === layer);
+                if (territory && (territory.type === 'polygon' || territory.type === 'rectangle')) {
+                    territory.area = calculatePolygonArea(layer);
+                }
+            });
+            updateStats();
+            showNotification('✏️ Território editado com sucesso');
+        });
+
+        // Evento de início de desenho
+        map.on(L.Draw.Event.DRAWSTART, function () {
+            gameState.currentMode = 'build';
+        });
+
+        // Event Listeners melhorados
         document.querySelectorAll('.mode-btn').forEach(btn => {
             btn.addEventListener('click', function() {
                 document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
                 this.classList.add('active');
                 gameState.currentMode = this.dataset.mode;
-                document.getElementById('currentMode').textContent = 
-                    this.dataset.mode === 'conquer' ? 'Conquista de Territórios' :
-                    this.dataset.mode === 'build' ? 'Construção de Territórios' : 'Edição de Territórios';
                 
+                const modeText = {
+                    'conquer': 'Conquista de Territórios',
+                    'build': 'Construção de Territórios',
+                    'edit': 'Edição de Territórios'
+                }[this.dataset.mode];
+                
+                document.getElementById('currentMode').textContent = modeText;
+                
+                // Feedback visual
+                showNotification(`Modo ${modeText} ativado`);
+                
+                // Se for modo construção, destacar o botão de desenho
                 if (gameState.currentMode === 'build') {
-                    map.removeControl(drawControl);
-                    map.addControl(drawControl);
+                    const drawLink = document.querySelector('.leaflet-draw-draw-polygon');
+                    if (drawLink) {
+                        drawLink.style.animation = 'pulse 1s';
+                        setTimeout(() => {
+                            drawLink.style.animation = '';
+                        }, 1000);
+                    }
                 }
             });
         });
 
+        // Evento de seleção de cor
         document.querySelectorAll('.color-option').forEach(option => {
             option.addEventListener('click', function() {
                 document.querySelectorAll('.color-option').forEach(o => o.classList.remove('selected'));
                 this.classList.add('selected');
                 gameState.empireColor = this.dataset.color;
                 
-                // Atualizar cor dos controles de desenho
-                const drawItems = document.querySelector('.leaflet-draw-section');
-                if (drawItems) {
-                    const buttons = drawItems.querySelectorAll('a');
-                    buttons.forEach(btn => {
-                        btn.style.backgroundColor = gameState.empireColor;
-                    });
-                }
+                // Atualizar estilo dos controles de desenho
+                const drawPolygonLink = document.querySelector('.leaflet-draw-draw-polygon');
+                const drawRectangleLink = document.querySelector('.leaflet-draw-draw-rectangle');
                 
-                showNotification(`Cor do império alterada para ${this.dataset.color}`);
+                [drawPolygonLink, drawRectangleLink].forEach(link => {
+                    if (link) {
+                        link.style.backgroundColor = gameState.empireColor;
+                    }
+                });
+                
+                showNotification(`🎨 Cor do império alterada`);
             });
         });
 
@@ -1086,19 +1357,21 @@
         });
 
         document.getElementById('conquerModeBtn').addEventListener('click', function() {
-            gameState.currentMode = 'conquer';
-            document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
-            document.querySelector('.mode-btn.conquer').classList.add('active');
-            document.getElementById('currentMode').textContent = 'Conquista de Territórios';
-            showNotification('Modo Conquista ativado! Clique nos países para conquistar.');
+            document.querySelector('[data-mode="conquer"]').click();
         });
 
         document.getElementById('drawPolygonBtn').addEventListener('click', function() {
-            gameState.currentMode = 'build';
-            document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
-            document.querySelector('.mode-btn.build').classList.add('active');
-            document.getElementById('currentMode').textContent = 'Construção de Territórios';
-            showNotification('Clique no botão de desenhar polígono na barra de ferramentas!');
+            document.querySelector('[data-mode="build"]').click();
+            
+            // Acionar o desenho de polígono
+            setTimeout(() => {
+                const drawPolygonLink = document.querySelector('.leaflet-draw-draw-polygon');
+                if (drawPolygonLink) {
+                    drawPolygonLink.click();
+                } else {
+                    showNotification('⚠️ Clique no botão de polígono na barra de ferramentas', true);
+                }
+            }, 100);
         });
 
         document.getElementById('deleteBtn').addEventListener('click', function() {
@@ -1106,30 +1379,101 @@
                 removeTerritory(gameState.selectedTerritory);
                 gameState.selectedTerritory = null;
             } else {
-                showNotification('Selecione um território primeiro!');
+                showNotification('⚠️ Selecione um território primeiro!', true);
             }
         });
 
         document.getElementById('saveEmpireBtn').addEventListener('click', function() {
-            const empireData = {
-                name: gameState.empireName,
-                color: gameState.empireColor,
-                territories: gameState.conqueredTerritories.length + gameState.drawnTerritories.length,
-                totalArea: document.getElementById('totalArea').textContent
-            };
-            
-            localStorage.setItem('savedEmpire', JSON.stringify(empireData));
-            showNotification(`👑 ${empireData.name} salvo com sucesso!`);
+            try {
+                const empireData = {
+                    name: gameState.empireName,
+                    color: gameState.empireColor,
+                    conqueredTerritories: gameState.conqueredTerritories.map(t => ({
+                        id: t.id,
+                        name: t.name,
+                        area: t.area,
+                        population: t.population,
+                        continent: t.continent
+                    })),
+                    drawnTerritories: [], // Não podemos salvar os layers diretamente
+                    totalArea: gameState.totalArea,
+                    territoriesCount: gameState.territoriesCount,
+                    savedAt: new Date().toISOString()
+                };
+                
+                localStorage.setItem('savedEmpire', JSON.stringify(empireData));
+                showNotification(`👑 ${empireData.name} salvo com sucesso!`);
+            } catch (e) {
+                console.error('Erro ao salvar:', e);
+                showNotification('Erro ao salvar império!', true);
+            }
+        });
+
+        document.getElementById('loadEmpireBtn').addEventListener('click', function() {
+            try {
+                const savedData = localStorage.getItem('savedEmpire');
+                if (!savedData) {
+                    showNotification('Nenhum império salvo encontrado!', true);
+                    return;
+                }
+                
+                const empireData = JSON.parse(savedData);
+                
+                // Confirmar carregamento
+                if (confirm(`Carregar império "${empireData.name}"?\nIsso substituirá o império atual.`)) {
+                    // Limpar territórios atuais
+                    gameState.conqueredTerritories.forEach(t => {
+                        t.marker.setStyle({
+                            fillColor: '#3498db',
+                            fillOpacity: 0.6,
+                            radius: 15
+                        });
+                    });
+                    
+                    gameState.conqueredTerritories = [];
+                    gameState.drawnTerritories = [];
+                    drawnItems.clearLayers();
+                    
+                    // Atualizar dados do império
+                    gameState.empireName = empireData.name;
+                    gameState.empireColor = empireData.color;
+                    
+                    document.getElementById('empireName').value = empireData.name;
+                    
+                    // Selecionar cor correspondente
+                    document.querySelectorAll('.color-option').forEach(opt => {
+                        if (opt.dataset.color === empireData.color) {
+                            opt.click();
+                        }
+                    });
+                    
+                    // Recriar territórios conquistados
+                    if (empireData.conqueredTerritories) {
+                        empireData.conqueredTerritories.forEach(t => {
+                            if (countriesData[t.id]) {
+                                conquerCountry(t.id, countriesData[t.id]);
+                            }
+                        });
+                    }
+                    
+                    showNotification(`📂 Império "${empireData.name}" carregado!`);
+                }
+            } catch (e) {
+                console.error('Erro ao carregar:', e);
+                showNotification('Erro ao carregar império!', true);
+            }
         });
 
         document.getElementById('clearAllBtn').addEventListener('click', function() {
-            if (confirm('Tem certeza que deseja limpar todos os territórios?')) {
+            if (confirm('⚠️ Tem certeza que deseja limpar todos os territórios?\nEsta ação não pode ser desfeita.')) {
                 // Resetar marcadores
                 Object.values(countryMarkers).forEach(marker => {
                     marker.setStyle({
                         fillColor: '#3498db',
                         fillOpacity: 0.6,
-                        radius: 20
+                        radius: 15,
+                        color: '#fff',
+                        weight: 2
                     });
                 });
                 
@@ -1137,53 +1481,174 @@
                 gameState.conqueredTerritories = [];
                 gameState.drawnTerritories = [];
                 drawnItems.clearLayers();
+                gameState.selectedTerritory = null;
                 
                 updateStats();
                 updateConqueredList();
-                showNotification('Todos os territórios foram limpos!');
+                showNotification('🔄 Todos os territórios foram removidos');
             }
         });
 
         document.getElementById('zoomIn').addEventListener('click', function() {
-            map.setZoom(map.getZoom() + 1);
+            map.setZoom(Math.min(map.getZoom() + 1, map.getMaxZoom()));
         });
 
         document.getElementById('zoomOut').addEventListener('click', function() {
-            map.setZoom(map.getZoom() - 1);
+            map.setZoom(Math.max(map.getZoom() - 1, map.getMinZoom()));
         });
 
         document.getElementById('zoomReset').addEventListener('click', function() {
             map.setView([20, 0], 2);
+            showNotification('🌍 Zoom resetado');
         });
 
         document.getElementById('baseMap').addEventListener('change', function() {
             const selectedMap = this.value;
-            Object.values(baseMaps).forEach(layer => map.removeLayer(layer));
+            showLoading(true);
+            
+            Object.values(baseMaps).forEach(layer => {
+                if (map.hasLayer(layer)) {
+                    map.removeLayer(layer);
+                }
+            });
+            
             baseMaps[selectedMap].addTo(map);
+            
+            setTimeout(() => {
+                showLoading(false);
+            }, 500);
+            
+            showNotification(`🗺️ Mapa alterado para ${this.options[this.selectedIndex].text}`);
         });
 
         document.getElementById('fullscreenBtn').addEventListener('click', function() {
             const container = document.querySelector('.container');
+            
             if (!document.fullscreenElement) {
-                if (container.requestFullscreen) container.requestFullscreen();
-                else if (container.mozRequestFullScreen) container.mozRequestFullScreen();
-                else if (container.webkitRequestFullscreen) container.webkitRequestFullscreen();
-                else if (container.msRequestFullscreen) container.msRequestFullscreen();
+                if (container.requestFullscreen) {
+                    container.requestFullscreen();
+                } else if (container.webkitRequestFullscreen) {
+                    container.webkitRequestFullscreen();
+                } else if (container.msRequestFullscreen) {
+                    container.msRequestFullscreen();
+                }
+                this.textContent = '🚪 Sair da Tela Cheia';
             } else {
-                if (document.exitFullscreen) document.exitFullscreen();
-                else if (document.mozCancelFullScreen) document.mozCancelFullScreen();
-                else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
-                else if (document.msExitFullscreen) document.msExitFullscreen();
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                } else if (document.msExitFullscreen) {
+                    document.msExitFullscreen();
+                }
+                this.textContent = '🖥️ Tela Cheia';
             }
         });
 
-        // Inicializar marcadores
-        Object.entries(mockCountries).forEach(([key, data]) => {
-            createCountryMarker(key, data).addTo(map);
+        document.getElementById('locateMeBtn').addEventListener('click', function() {
+            if (!navigator.geolocation) {
+                showNotification('Geolocalização não suportada pelo seu navegador', true);
+                return;
+            }
+            
+            showLoading(true);
+            
+            navigator.geolocation.getCurrentPosition(
+                function(position) {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    
+                    map.setView([lat, lng], 10);
+                    
+                    // Adicionar marcador temporário
+                    const marker = L.marker([lat, lng]).addTo(map);
+                    marker.bindPopup('📍 Você está aqui!').openPopup();
+                    
+                    setTimeout(() => {
+                        map.removeLayer(marker);
+                    }, 5000);
+                    
+                    showLoading(false);
+                    showNotification('📍 Localização encontrada!');
+                },
+                function(error) {
+                    showLoading(false);
+                    let errorMsg = 'Erro ao obter localização';
+                    switch(error.code) {
+                        case error.PERMISSION_DENIED:
+                            errorMsg = 'Permissão de localização negada';
+                            break;
+                        case error.POSITION_UNAVAILABLE:
+                            errorMsg = 'Localização indisponível';
+                            break;
+                        case error.TIMEOUT:
+                            errorMsg = 'Tempo limite excedido';
+                            break;
+                    }
+                    showNotification(errorMsg, true);
+                }
+            );
         });
 
-        // Inicializar estatísticas
-        updateStats();
+        // Inicializar marcadores
+        showLoading(true);
+        
+        setTimeout(() => {
+            Object.entries(countriesData).forEach(([key, data]) => {
+                try {
+                    createCountryMarker(key, data).addTo(map);
+                } catch (e) {
+                    console.error(`Erro ao criar marcador para ${key}:`, e);
+                }
+            });
+            
+            // Verificar se há império salvo e oferecer carregamento
+            const savedEmpire = localStorage.getItem('savedEmpire');
+            if (savedEmpire) {
+                const data = JSON.parse(savedEmpire);
+                setTimeout(() => {
+                    if (confirm(`🔄 Deseja carregar o império "${data.name}" salvo anteriormente?`)) {
+                        document.getElementById('loadEmpireBtn').click();
+                    }
+                }, 1000);
+            }
+            
+            showLoading(false);
+            updateStats();
+        }, 500);
+
+        // Adicionar CSS para animações
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes pulse {
+                0% { transform: scale(1); }
+                50% { transform: scale(1.1); }
+                100% { transform: scale(1); }
+            }
+            
+            .country-tooltip {
+                font-weight: bold;
+                font-size: 14px;
+                padding: 5px 10px;
+                background: rgba(0, 0, 0, 0.8);
+                color: white;
+                border: 2px solid #ffd700;
+            }
+            
+            .leaflet-draw-draw-polygon,
+            .leaflet-draw-draw-rectangle {
+                transition: all 0.3s ease;
+            }
+            
+            .leaflet-draw-draw-polygon:hover,
+            .leaflet-draw-draw-rectangle:hover {
+                transform: scale(1.1);
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Atualizar estatísticas periodicamente
+        setInterval(updateStats, 1000);
     </script>
 </body>
 </html>
